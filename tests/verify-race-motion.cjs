@@ -195,7 +195,7 @@ for (const { name, finish, nominal } of cases) {
 
   // advance is evaluated from distance, so seek/pause/resume and uneven RAF
   // spacing must not need a hidden elapsed-time accumulator to remain exact.
-  for (const speed of [0.5, 1, 2, 4])
+  for (const speed of [0.25, 0.5, 1, 2, 4, 8])
     for (const start of [0, A * 0.5, A + 0.2, cross - 0.2, cross + B * 0.3, end - 0.2]) {
       const distance = motion.distanceAtTime(start, finish);
       near(
@@ -217,7 +217,7 @@ for (const { name, finish, nominal } of cases) {
         partitioned = motion.advance(partitioned, elapsed * fraction, finish);
       near(partitioned, whole, 8e-8, name + ' ' + speed + 'x uneven partition invariance');
     }
-  for (const speed of [0.5, 1, 2, 4]) {
+  for (const speed of [0.25, 0.5, 1, 2, 4, 8]) {
     const start = A + 0.5,
       distance = motion.distanceAtTime(start, finish);
     near(

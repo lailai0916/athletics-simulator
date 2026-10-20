@@ -44,7 +44,7 @@ const V = 10,
   B = 2.4,
   START = 12,
   RUN_OUT = 12,
-  rates = [0.5, 1, 2, 4],
+  rates = [0.25, 0.5, 1, 2, 4, 8],
   ORIGIN = 1000;
 // Independent closed-form displacement oracle. Do not call RaceMotion here:
 // an incorrect frame scale, all-finish clock or ramp must fail integration QA.
@@ -249,8 +249,10 @@ for (const test of cases)
     let wall = 0,
       sim = startClock;
     for (const [seconds, speed] of [
+      [0.032, 0.25],
       [0.004, 0.5],
       [0.016, 4],
+      [0.013, 8],
       [0, 2],
       [0.17, 1],
       [0.333, 2],
@@ -318,5 +320,5 @@ console.log(
   checks +
     ' playback checks passed across ' +
     cases.length +
-    ' event/group configurations: actual RAF integration, smooth start/run-out, shared 10 m/s cruise, 0.5/1/2/4x, coarse/irregular frames, speed changes, seek, pause, hidden time and replay.'
+    ' event/group configurations: actual RAF integration, smooth start/run-out, shared 10 m/s cruise, 0.25/0.5/1/2/4/8x, coarse/irregular frames, speed changes, seek, pause, hidden time and replay.'
 );

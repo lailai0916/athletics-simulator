@@ -208,6 +208,9 @@ button svg {
   font-weight: 600;
   text-anchor: middle;
   dominant-baseline: central;
+  /* WebKit can omit subpixel SVG glyphs under geometricPrecision, even when
+     the viewBox enlarges them. Keep their metre-based layout and normal paint. */
+  text-rendering: auto;
   pointer-events: none;
   display: none;
 }

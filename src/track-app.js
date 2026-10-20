@@ -1045,11 +1045,19 @@
       bucket = 0.0001 * Math.pow(2, Math.floor(Math.log2(requested / 0.0001)));
     return { requested, tolerance: Math.min(requested, bucket) };
   }
+  function cameraScale(w, h, requested = 1) {
+    return clamp(requested, Math.max(0.1 / w, 0.05 / h), Math.min(1e5 / w, 1e6 / h));
+  }
   function setBox(box, fromInput = false) {
     if (!fromInput) camera.cancel();
     let [x, y, w, h] = box;
-    w = clamp(w, 0.05, 1e6);
-    h = clamp(h, 0.05, 1e6);
+    const scale = cameraScale(w, h);
+    // Resize and wheel share one uniform limit. Clamping dimensions separately
+    // would move the centre and stretch the view at extreme aspect ratios.
+    x += (w - w * scale) / 2;
+    y += (h - h * scale) / 2;
+    w *= scale;
+    h *= scale;
     const previous = state.box,
       viewport = camera.viewport(),
       sizeChanged =
@@ -1134,22 +1142,15 @@
   function setView(view) {
     state.view = view;
     if (view === 'follow') {
-      const route = state.routes[state.selected < 0 ? 0 : state.selected],
-        p = route.motion
-          ? route.motion.batonPosition(state.distance)
-          : displayedPoint(route, state.distance);
-      fitPoints(
-        [
-          { x: p.x - 10, y: p.y - 10 },
-          { x: p.x + 10, y: p.y + 10 },
-        ],
-        1
-      );
+      const p = project(followPoint(state.selected < 0 ? 0 : state.selected)),
+        [, , w, h] = camera.box();
+      // Selection changes the centre, including any zoom awaiting its paint frame.
+      setBox([p.x - w / 2, p.y - h / 2, w, h]);
     } else if (view === 'full') fitField();
   }
   function zoom(factor, anchor) {
     const [x, y, w, h] = camera.box(),
-      scale = clamp(1 / factor, Math.max(0.1 / w, 0.05 / h), Math.min(1e5 / w, 1e6 / h)),
+      scale = cameraScale(w, h, 1 / factor),
       nw = w * scale,
       nh = h * scale;
     // Following owns the centre; wheel input changes only the field of view.
@@ -1272,7 +1273,7 @@
     select.addEventListener('change', () => changeEvent(select.value));
     $('play').addEventListener('click', togglePlay);
     $('speed').addEventListener('click', () => {
-      const values = [0.5, 1, 2, 4];
+      const values = [0.25, 0.5, 1, 2, 4, 8];
       state.speed = values[(values.indexOf(state.speed) + 1) % values.length];
       renderControls();
     });
@@ -1296,15 +1297,18 @@
       update();
     });
     svg.addEventListener('keydown', (ev) => {
-      const token = ev.target.closest?.('.athlete[role="button"]');
-      if (!token || ev.isComposing || ev.metaKey || ev.ctrlKey || ev.altKey) return;
+      // A relay leg can retain keyboard focus after handing over. Escape and
+      // Space must still work when its token becomes a non-interactive image.
+      const token = ev.target.closest?.('.athlete');
+      if (!token || ev.defaultPrevented || ev.isComposing || ev.metaKey || ev.ctrlKey || ev.altKey)
+        return;
       if (ev.code === 'Space') {
         ev.preventDefault();
         ev.stopPropagation();
         if (!ev.repeat) togglePlay();
         return;
       }
-      if (ev.key === 'Enter') {
+      if (ev.key === 'Enter' && token.getAttribute('role') === 'button') {
         ev.preventDefault();
         ev.stopPropagation();
         if (!ev.repeat) selectTeam(Number(token.dataset.runner));
@@ -1343,13 +1347,12 @@
       if (!drag.moved) {
         drag.moved = true;
         svg.setPointerCapture(ev.pointerId);
-        if (state.view !== 'follow') {
-          state.view = 'manual';
-          svg.classList.add('dragging');
-        }
+        // Manual movement takes over the latest follow position and clears its
+        // visual selection together. Pointerdown alone is still just a click.
+        if (state.view === 'follow' || state.selected >= 0) clearSelection();
+        state.view = 'manual';
+        svg.classList.add('dragging');
       }
-      // Still recognise a drag so its release cannot click an athlete accidentally.
-      if (state.view === 'follow') return;
       const box = camera.box(),
         moveX = ev.clientX - drag.lastX,
         moveY = ev.clientY - drag.lastY;
@@ -1430,11 +1433,14 @@
       if (['ArrowRight', 'ArrowLeft'].includes(ev.key)) {
         ev.preventDefault();
         stop();
-        state.distance = clamp(
-          state.distance + ((ev.key === 'ArrowRight' ? 1 : -1) * state.event.distance) / 100,
-          0,
-          state.event.distance
-        );
+        const progress = clamp(state.distance, 0, state.event.distance),
+          step = state.event.distance / 100;
+        // The slider stops at the race distance while athletes finish their
+        // run-out. Forward seeking at 100% must not rewind that remaining motion.
+        if (ev.key === 'ArrowRight') {
+          if (progress < state.event.distance)
+            state.distance = Math.min(state.event.distance, progress + step);
+        } else state.distance = Math.max(0, progress - step);
         state.phase = state.distance ? 'run' : 'marks';
         update();
       }

@@ -1,6 +1,7 @@
 'use strict';
 const assert = require('node:assert/strict');
 const harness = require('./helpers/app-harness.cjs');
+const { tokenPoint } = require('./helpers/follow-target.cjs');
 let checks = 0;
 function near(a, b, message, eps = 1e-8) {
   assert.equal(a.length, b.length, message);
@@ -299,11 +300,11 @@ for (const [width, height] of [
   h.api.state.distance = 206;
   h.api.update();
   const b = h.box(),
-    runner = h.api.state.runners[2].frame.baton;
+    runner = tokenPoint(h, 2);
   near(
     [b[0] + b[2] / 2, b[1] + b[3] / 2],
     [runner.x, runner.y],
-    'follow centres actual baton position'
+    'follow centres the painted athlete body'
   );
   assert.equal(h.stats.viewBoxWrites, 1);
   assert.equal(h.stats.clientReads, 0);
@@ -440,8 +441,7 @@ for (const event of ['5000', '10000'])
         h.svg.dispatch('pointerdown', { clientX: 450, clientY: 300 });
         h.svg.dispatch('pointermove', { clientX: 485, clientY: 322 });
         h.svg.dispatch('pointerup');
-        if (origin === 'manual')
-          expected = [expected[0] - 35 * scale, expected[1] - 22 * scale, expected[2], expected[3]];
+        expected = [expected[0] - 35 * scale, expected[1] - 22 * scale, expected[2], expected[3]];
       }
       h.clear();
       h.nodes.get('group-start').dispatch('click');
@@ -450,7 +450,7 @@ for (const event of ['5000', '10000'])
       near(h.box(), expected, label + ' group start preserves camera');
       assert.equal(
         h.stats.viewBoxWrites,
-        pending === 'none' || (origin === 'follow' && pending === 'drag') ? 0 : 1,
+        pending === 'none' ? 0 : 1,
         label + ' retains allowed pending camera input without refitting'
       );
       assert.equal(
@@ -668,7 +668,7 @@ for (const input of ['timeline', 'ArrowLeft', 'ArrowRight']) {
   assert.equal(h.stats.viewBoxWrites, 1);
   checks += 4;
   let b = h.box(),
-    runner = h.api.state.runners[2].frame.baton;
+    runner = tokenPoint(h, 2);
   near(
     [b[0] + b[2] / 2, b[1] + b[3] / 2],
     [runner.x, runner.y],
@@ -677,7 +677,7 @@ for (const input of ['timeline', 'ArrowLeft', 'ArrowRight']) {
   h.api.state.distance += 1;
   h.api.update();
   b = h.box();
-  runner = h.api.state.runners[2].frame.baton;
+  runner = tokenPoint(h, 2);
   near(b.slice(2), before.slice(2), input + ' subsequent update retains follow zoom');
   near(
     [b[0] + b[2] / 2, b[1] + b[3] / 2],
@@ -685,8 +685,8 @@ for (const input of ['timeline', 'ArrowLeft', 'ArrowRight']) {
     input + ' subsequent update continues following the same team'
   );
 }
-// A window resize reprojects the existing view instead of reapplying the
-// 22-m follow preset. Same-size resize notifications must be exact no-ops.
+// A window resize reprojects the existing view instead of applying a fixed
+// follow zoom preset. Same-size resize notifications must be exact no-ops.
 for (const origin of ['manual', 'follow']) {
   const h = harness();
   h.api.state.distance = 206;
@@ -730,11 +730,11 @@ for (const origin of ['manual', 'follow']) {
     );
     checks++;
     const b = h.box(),
-      runner = h.api.state.runners[2].frame.baton;
+      runner = tokenPoint(h, 2);
     near(
       [b[0] + b[2] / 2, b[1] + b[3] / 2],
       [runner.x, runner.y],
-      'narrow-screen follow centres the baton without rotating coordinates'
+      'narrow-screen follow centres the painted athlete without rotating coordinates'
     );
   } else {
     h.resize(1280, 720);

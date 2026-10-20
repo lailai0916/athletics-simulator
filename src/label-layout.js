@@ -1,12 +1,29 @@
 const labelMetricsCache = new Map(),
   labelLayoutState = new WeakMap();
 let labelMeasureContext = null;
+function canvasFontStretch(value) {
+  // Computed SVG styles serialize these CSS keywords as percentages, while
+  // CanvasFontStretch only accepts the corresponding keyword enum.
+  const names = {
+    '50%': 'ultra-condensed',
+    '62.5%': 'extra-condensed',
+    '75%': 'condensed',
+    '87.5%': 'semi-condensed',
+    '100%': 'normal',
+    '112.5%': 'semi-expanded',
+    '125%': 'expanded',
+    '150%': 'extra-expanded',
+    '200%': 'ultra-expanded',
+  };
+  return names[value] || (Object.values(names).includes(value) ? value : 'normal');
+}
 function labelLayout(node) {
   if (!node) return null;
   const cx = Number(node.dataset.labelCenterX ?? node.getAttribute('x') ?? 0),
     cy = Number(node.dataset.labelCenterY ?? node.getAttribute('y') ?? 0),
     style = getComputedStyle(node),
-    computedSize = parseFloat(style.fontSize);
+    computedSize = parseFloat(style.fontSize),
+    fontStretch = canvasFontStretch(style.fontStretch);
   let previous = labelLayoutState.get(node);
   // Keep the authored size separate from our fitted size. A two-digit bib may
   // shrink and later grow back to one digit without accumulating font scaling.
@@ -17,7 +34,7 @@ function labelLayout(node) {
       style.fontFamily,
       style.fontWeight,
       style.fontStyle,
-      style.fontStretch,
+      fontStretch,
       style.fontKerning,
       style.direction,
       node.textContent,
@@ -27,8 +44,7 @@ function labelLayout(node) {
     if (!labelMeasureContext)
       labelMeasureContext = document.createElement('canvas').getContext('2d');
     labelMeasureContext.font = `${style.fontStyle || 'normal'} ${style.fontWeight || '400'} ${units}px ${style.fontFamily}`;
-    if ('fontStretch' in labelMeasureContext)
-      labelMeasureContext.fontStretch = style.fontStretch || 'normal';
+    if ('fontStretch' in labelMeasureContext) labelMeasureContext.fontStretch = fontStretch;
     if ('fontKerning' in labelMeasureContext)
       labelMeasureContext.fontKerning = style.fontKerning || 'auto';
     if ('direction' in labelMeasureContext)

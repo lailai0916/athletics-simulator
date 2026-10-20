@@ -14,6 +14,24 @@ This project follows Semantic Versioning. Entries describe user-visible behavior
 
 - 新增 0.25× 与 8× 播放倍数，倍速按钮支持六档循环切换。
 
+### Fixed
+
+- Selecting an athlete or team preserves the current zoom, including pending wheel input. Dragging leaves follow mode, clears the selection and pans from the latest position; wheel zoom and Space playback controls retain following.
+- Relay following centres the visible current runner instead of the hidden baton position, including at extreme zoom and after handovers.
+- Extreme-zoom window resizing preserves the camera centre and aspect ratio; subsequent wheel input respects the same zoom limits without jumping in the opposite direction.
+- Escape still clears following when keyboard focus remains on a relay leg after its handover. Forward seeking after the finish no longer moves runners backward; backward seeking uses the displayed race progress.
+- SVG font-stretch values are normalized before Canvas measurement, avoiding invalid-enum warnings and keeping equivalent font styles in the same metrics cache.
+- Athlete labels remain visible in Safari at high zoom by avoiding the subpixel SVG text rendering hint that suppresses their glyphs.
+
+### 修复
+
+- 选中运动员或队伍时保留当前缩放，包括尚未绘制的滚轮输入。拖拽会退出跟随、清除选中并从最新位置平移；滚轮缩放与空格播放控制继续保持跟随。
+- 接力跟随以当前运动员的可见圆点中心为准，修复极高倍率缩放及交接后的隐藏接力棒坐标偏移。
+- 极限放大后调整窗口尺寸时，保持镜头中心与画幅比例；后续滚轮使用统一缩放边界，避免反向跳变。
+- 接力交接后焦点仍在上一棒时，Escape 也能取消跟随；冲线后向前跳转不再让运动员倒退，向后跳转以显示进度为基准。
+- 将 SVG 字体拉伸值转换为 Canvas 接受的格式，消除无效枚举警告，并让等价字体样式共用测量缓存。
+- 避开 Safari 会漏画亚像素 SVG 字体的渲染设置，保证高倍率下运动员编号正常显示。
+
 ## 0.1.0 - 2026-10-21
 
 ### Added

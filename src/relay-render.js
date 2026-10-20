@@ -150,6 +150,13 @@ function updateRelayNode(node, a, index) {
 function athletePoint(route, d) {
   return displayedPoint(route, d);
 }
+function followPoint(index, frame) {
+  if (!isRelay()) return athletePoint(state.routes[index], state.distance);
+  // Tokens are drawn at the athlete's body, not at the invisible grip/baton.
+  // Reuse the frame already drawn during playback; sample only on selection.
+  const motion = frame || state.runners[index].model.sample(state.distance);
+  return motion.athletes[motion.activeLeg - 1];
+}
 function updateRunners() {
   const e = state.event,
     d = state.distance;
@@ -199,7 +206,7 @@ function updateRunners() {
   if (state.view === 'follow') {
     const i = state.selected >= 0 ? state.selected : 0,
       runner = state.runners[i],
-      a = isRelay() ? runner.frame.baton : displayedPoint(state.routes[i], d),
+      a = followPoint(i, runner.frame),
       p = project(a),
       box = camera.box(),
       w = box[2],

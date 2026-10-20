@@ -55,7 +55,7 @@ npm run preview
 
 `dist/index.html` contains the application, styles, and scripts. It can also be opened directly or served by a static host. Build output is reproducible from the source and is not committed.
 
-Drag the field to pan and use the wheel to zoom. Click an athlete to follow it; while following, the wheel changes the zoom and dragging does not move the camera. Click the same athlete again or press Escape with the athlete focused to leave follow mode. Space starts or pauses playback. The event menu also supports arrow keys, Home, End, Enter, and Escape.
+Drag the field to pan and use the wheel to zoom. Click an athlete to centre the camera on it and follow its position at the current zoom. While following, the wheel changes the zoom without leaving follow mode; dragging pans the camera and clears both following and selection. Click the same athlete again or press Escape with the athlete focused to leave follow mode. Space starts or pauses playback without changing the selection or follow mode. The event menu also supports arrow keys, Home, End, Enter, and Escape.
 
 ## Project Structure
 

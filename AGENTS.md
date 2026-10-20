@@ -35,8 +35,9 @@ athlete's measured path distance are distinct. Preserve the shared cruise speed,
 continuous relay handovers and legal course distances when changing routes.
 
 Keep the complete permanent marking set independent of the selected event.
-Preserve camera pan/zoom on event changes and timeline input. Following an athlete
-locks manual panning, permits zoom and survives playback toggles.
+Preserve camera pan/zoom on event changes and timeline input. Selecting an athlete
+centres the camera without changing its zoom. Wheel zoom and playback toggles retain
+following; dragging pans the camera and clears both following and selection.
 
 Keep the page visual-first: floating controls, no explanatory panels or guide arrows.
 Add public-facing text through `src/locale.js`, including accessible names, in English

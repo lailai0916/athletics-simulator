@@ -25,6 +25,25 @@ const context2d = {
     };
   },
 };
+const stretchNames = [
+  'ultra-condensed',
+  'extra-condensed',
+  'condensed',
+  'semi-condensed',
+  'normal',
+  'semi-expanded',
+  'expanded',
+  'extra-expanded',
+  'ultra-expanded',
+];
+let measuredStretch = 'normal';
+Object.defineProperty(context2d, 'fontStretch', {
+  get: () => measuredStretch,
+  set: (value) => {
+    assert(stretchNames.includes(value), 'CanvasFontStretch only accepts its keyword enum');
+    measuredStretch = value;
+  },
+});
 const nodes = [];
 const ctx = {
   console,
@@ -38,7 +57,7 @@ const ctx = {
     fontFamily: 'Test Sans',
     fontStyle: 'normal',
     fontWeight: '600',
-    fontStretch: 'normal',
+    fontStretch: n.fontStretch ?? 'normal',
     fontKerning: 'none',
     direction: 'ltr',
   }),
@@ -166,5 +185,29 @@ for (const text of ['1', '8']) {
   ctx.centerAllLabels();
   assert(order.indexOf('write') >= 2, 'all glyph style reads precede positional writes');
   checks++;
+}
+// Computed SVG styles serialize font-stretch as a percentage. Canvas accepts
+// the corresponding keyword enum instead, and equivalent styles share metrics.
+for (const [percentage, name] of [
+  ['50%', 'ultra-condensed'],
+  ['62.5%', 'extra-condensed'],
+  ['75%', 'condensed'],
+  ['87.5%', 'semi-condensed'],
+  ['100%', 'normal'],
+  ['112.5%', 'semi-expanded'],
+  ['125%', 'expanded'],
+  ['150%', 'extra-expanded'],
+  ['200%', 'ultra-expanded'],
+]) {
+  vm.runInContext('labelMetricsCache.clear()', ctx);
+  const n = node('8');
+  n.fontStretch = percentage;
+  ctx.centerLabel(n);
+  assert.equal(context2d.fontStretch, name, 'CSS stretch uses its Canvas keyword equivalent');
+  const count = measurements;
+  n.fontStretch = name;
+  ctx.centerLabel(n);
+  assert.equal(measurements, count, 'equivalent computed stretch reuses the same metrics');
+  checks += 2;
 }
 console.log(`${checks} label-layout checks passed.`);

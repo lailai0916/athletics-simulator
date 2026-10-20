@@ -7,6 +7,7 @@ const fs = require('node:fs'),
   { createRequire } = require('node:module');
 const harness = require('./helpers/app-harness.cjs'),
   results = [];
+const { tokenPoint } = require('./helpers/follow-target.cjs');
 function check(name, fn) {
   try {
     fn();
@@ -26,12 +27,8 @@ function token(h) {
   return runner.active || runner.athletes.find((n) => n.getAttribute('role') === 'button');
 }
 function point(h) {
-  const runner = h.api.state.runners[h.api.state.selected];
-  if (runner.frame) return [runner.frame.baton.x, runner.frame.baton.y];
-  const m = token(h)
-    .getAttribute('transform')
-    .match(/translate\(([-\d.e+]+)\s+([-\d.e+]+)\)/);
-  return [+m[1], +m[2]];
+  const p = tokenPoint(h);
+  return [p.x, p.y];
 }
 function selected(event) {
   const h = harness();
@@ -105,17 +102,44 @@ for (const event of ['100', '5000', '4x400']) {
     h.flush();
     follow(h, size);
   });
-  check(event + ' drag remains locked after seeking', () => {
-    const h = selected(event),
-      size = h.box().slice(2);
+  check(event + ' drag after seeking pans and clears follow and selection', () => {
+    const h = selected(event);
     seek(h, 47);
-    const before = h.box();
+    const before = h.box(),
+      scale = Math.max(before[2] / 1280, before[3] / 720),
+      expected = [before[0] - 60 * scale, before[1] - 50 * scale, before[2], before[3]],
+      assertCleared = () => {
+        assert.equal(h.api.state.view, 'manual', 'camera remains in manual mode');
+        assert.equal(h.api.state.selected, -1, 'former follow target is deselected');
+        for (const runner of h.api.state.runners)
+          for (const node of runner.active ? [runner.active] : runner.athletes) {
+            assert.notEqual(node.getAttribute('aria-pressed'), 'true', 'selection ring is cleared');
+            assert.notEqual(
+              node.getAttribute('data-selected'),
+              'true',
+              'relay highlight is cleared'
+            );
+          }
+      };
     h.svg.dispatch('pointerdown', { clientX: 300, clientY: 200 });
     h.svg.dispatch('pointermove', { clientX: 360, clientY: 250 });
     h.svg.dispatch('pointerup');
     h.flush();
-    near(h.box(), before, 'drag cannot move a followed camera after seek');
-    follow(h, size);
+    near(h.box(), expected, 'drag pans the followed camera after seek without changing zoom');
+    assertCleared();
+    h.api.togglePlay();
+    h.flush(1000);
+    h.flush(1100);
+    assert(h.api.state.distance > 47, 'race continues after leaving follow');
+    near(h.box(), expected, 'playback cannot restore the cancelled follow');
+    assertCleared();
+    seek(h, 57);
+    near(h.box(), expected, 'later seeking preserves the manually positioned camera');
+    assertCleared();
+    h.api.state.distance += 5;
+    h.api.update();
+    near(h.box(), expected, 'later athlete motion cannot restore the cancelled follow');
+    assertCleared();
   });
   check(event + ' Space after seek starts and pauses without changing follow', () => {
     const h = selected(event),

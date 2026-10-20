@@ -1,0 +1,11 @@
+'use strict';
+const fs = require('node:fs');
+const path = require('node:path');
+const { createHash } = require('node:crypto');
+const { assemblePage } = require('./assemble.cjs');
+const html = assemblePage();
+const destination = path.join(__dirname, '..', 'dist');
+fs.mkdirSync(destination, { recursive: true });
+fs.writeFileSync(path.join(destination, 'index.html'), html, 'utf8');
+console.log(`Built dist/index.html (${Buffer.byteLength(html)} bytes)`);
+console.log(`SHA-256 ${createHash('sha256').update(html).digest('hex')}`);

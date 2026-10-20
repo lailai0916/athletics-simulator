@@ -1,2 +1,8 @@
 node_modules/
+dist/
+test-results/
+coverage/
+.standards/
 package-lock.json
+LICENSE
+LICENSE-docs

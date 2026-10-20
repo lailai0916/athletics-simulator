@@ -1,0 +1,20 @@
+Creative Commons Attribution 4.0 International (CC BY 4.0)
+
+Copyright (c) 2026 lailai
+
+The original prose in README.md, README.zh-Hans.md, CHANGELOG.md, docs/*.md,
+and the Markdown contribution, issue, pull-request and security guidance under
+.github/ is licensed under the Creative Commons Attribution 4.0 International
+License. The license terms are available at:
+
+https://creativecommons.org/licenses/by/4.0/legalcode
+
+You may share and adapt that documentation for any purpose, including
+commercially, subject to attribution, a link to the license, and an indication
+of changes as specified by the license. Attribute "Athletics Simulator
+contributors" and link to https://github.com/lailai0916/athletics-simulator.
+
+Source code, configuration, tests and original application artwork/screenshots
+are covered by the MIT License in LICENSE. This documentation grant does not
+relicense third-party material, World Athletics publications, or linked sources.
+Third-party publications are referenced, not bundled with the project.

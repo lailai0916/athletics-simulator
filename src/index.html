@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+    <meta name="theme-color" content="#f4f3ed" />
+    <title>Athletics Simulator</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='2' y='7' width='28' height='18' rx='9' fill='%23b65442'/%3E%3Crect x='7' y='12' width='18' height='8' rx='4' fill='%23648570'/%3E%3C/svg%3E"
+    />
+    <style>
+      /*__CSS__*/
+    </style>
+  </head>
+  <body>
+    <main class="app" aria-label="田径场可视化">
+      <div class="top-controls">
+        <div class="event-picker" id="event-picker">
+          <select id="event-select" hidden aria-hidden="true" tabindex="-1"></select
+          ><button
+            id="event-picker-trigger"
+            class="event-picker-trigger"
+            type="button"
+            aria-haspopup="listbox"
+            aria-expanded="false"
+            aria-controls="event-picker-list"
+            aria-label="选择径赛项目"
+          >
+            <span id="event-picker-label"></span
+            ><svg
+              class="event-picker-chevron"
+              width="12"
+              height="12"
+              viewBox="0 0 12 12"
+              aria-hidden="true"
+            >
+              <path d="m3 4.5 3 3 3-3" />
+            </svg>
+          </button>
+          <div
+            id="event-picker-list"
+            class="event-picker-menu"
+            role="listbox"
+            aria-label="径赛项目"
+            tabindex="-1"
+            hidden
+          ></div>
+        </div>
+        <button
+          id="group-start"
+          class="icon-button"
+          aria-label="切换两组起跑"
+          aria-pressed="false"
+          hidden
+        ></button
+        ><button
+          id="language"
+          class="language icon-button"
+          type="button"
+          aria-label="切换至简体中文"
+        >
+          中
+        </button>
+      </div>
+      <div class="court">
+        <svg
+          id="stadium"
+          viewBox="3 13 190 110"
+          role="group"
+          aria-label="可交互的标准400米八道田径场"
+        >
+          <defs>
+            <pattern
+              id="rubber-grain"
+              patternUnits="userSpaceOnUse"
+              width=".048"
+              height=".048"
+              data-particle-diameter-min=".0016"
+              data-particle-diameter-max=".004"
+            >
+              <g fill="#713d30" opacity=".15">
+                <circle cx="0.005122" cy="0.005906" r="0.001972" />
+                <circle cx="0.019631" cy="0.004902" r="0.001271" />
+                <circle cx="0.034016" cy="0.002878" r="0.001609" />
+                <circle cx="0.002094" cy="0.012902" r="0.001600" />
+                <circle cx="0.020431" cy="0.010141" r="0.001661" />
+                <circle cx="0.036180" cy="0.010518" r="0.000988" />
+                <circle cx="0.003945" cy="0.019506" r="0.001995" />
+                <circle cx="0.020024" cy="0.020086" r="0.000866" />
+                <circle cx="0.036102" cy="0.019961" r="0.001812" />
+                <circle cx="0.004118" cy="0.027255" r="0.001807" />
+                <circle cx="0.018737" cy="0.028949" r="0.001576" />
+                <circle cx="0.034502" cy="0.027788" r="0.001129" />
+                <circle cx="0.002016" cy="0.036463" r="0.001021" />
+                <circle cx="0.020980" cy="0.035490" r="0.000955" />
+                <circle cx="0.036431" cy="0.035443" r="0.001774" />
+                <circle cx="0.004180" cy="0.043820" r="0.001101" />
+                <circle cx="0.019945" cy="0.044808" r="0.000904" />
+                <circle cx="0.037780" cy="0.043427" r="0.000861" />
+              </g>
+              <g fill="#e8a37e" opacity=".18">
+                <circle cx="0.013953" cy="0.003067" r="0.000918" />
+                <circle cx="0.027427" cy="0.005467" r="0.001859" />
+                <circle cx="0.045184" cy="0.002753" r="0.001064" />
+                <circle cx="0.012353" cy="0.011176" r="0.001944" />
+                <circle cx="0.029027" cy="0.011757" r="0.001139" />
+                <circle cx="0.043380" cy="0.012384" r="0.001195" />
+                <circle cx="0.011114" cy="0.019584" r="0.001449" />
+                <circle cx="0.027741" cy="0.018188" r="0.001096" />
+                <circle cx="0.045231" cy="0.018988" r="0.001591" />
+                <circle cx="0.011020" cy="0.026267" r="0.001548" />
+                <circle cx="0.027694" cy="0.026706" r="0.001416" />
+                <circle cx="0.043427" cy="0.026471" r="0.001473" />
+                <circle cx="0.013184" cy="0.035773" r="0.001878" />
+                <circle cx="0.027224" cy="0.037231" r="0.001492" />
+                <circle cx="0.042769" cy="0.035114" r="0.001134" />
+                <circle cx="0.010251" cy="0.042424" r="0.001953" />
+                <circle cx="0.030000" cy="0.042173" r="0.000805" />
+                <circle cx="0.044871" cy="0.042173" r="0.001972" />
+              </g>
+            </pattern>
+            <clipPath id="grass-clip"><path id="grass-clip-path" /></clipPath>
+            <clipPath id="track-band-clip" clipPathUnits="userSpaceOnUse">
+              <path id="track-band-path" clip-rule="evenodd" />
+            </clipPath>
+          </defs>
+          <g id="world">
+            <g id="base-layer" aria-hidden="true"></g>
+            <g id="fixed-markings-layer" aria-hidden="true"></g>
+            <g id="track-lines-layer" aria-hidden="true"></g>
+            <g id="priority-markings-layer" aria-hidden="true"></g>
+            <g id="event-layer" aria-hidden="true"></g>
+            <g id="route-layer" aria-hidden="true"></g>
+            <g id="start-layer" aria-hidden="true"></g>
+            <g id="runner-layer"></g>
+          </g>
+        </svg>
+      </div>
+      <div class="bottom-controls">
+        <div class="transport">
+          <button id="play" class="play" aria-label="播放演示"></button
+          ><input
+            id="timeline"
+            type="range"
+            min="0"
+            max="1600"
+            step=".1"
+            value="0"
+            aria-label="比赛进度"
+          /><button
+            id="speed"
+            class="speed"
+            type="button"
+            aria-label="播放倍数：1 倍"
+            title="切换播放倍数"
+          >
+            1×
+          </button>
+        </div>
+      </div>
+    </main>
+    <script>
+      /*__DATA__*/
+    </script>
+    <script>
+      /*__APP__*/
+    </script>
+  </body>
+</html>

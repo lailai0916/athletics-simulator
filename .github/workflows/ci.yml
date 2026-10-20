@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -12,19 +12,36 @@ permissions:
 jobs:
   validate:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7
+      - name: Check out project
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Check out reviewed repository standards
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          repository: lailai0916/lailai-template
+          ref: aab624269fb9cdf18b9da5d11605eb9b0fc79154
+          path: .standards
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
         with:
           python-version: '3.13'
-
-      - name: Validate repository initialization
-        run: python3 scripts/check_repository.py --root .
-      - name: Test repository standards
-        run: python3 -m unittest discover -s tests -v
-      - uses: actions/setup-node@v4
+      - name: Validate repository standards
+        run: python3 .standards/scripts/check_repository.py --root . --display-name 'Athletics Simulator'
+      - name: Validate tracked filenames
+        run: git ls-files -z | xargs -0 python3 .standards/scripts/check_repository.py --paths
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22'
           cache: npm
       - run: npm ci --ignore-scripts
-      - run: npm run format:check
+      - run: npm run check
+      - name: Upload offline application
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: athletics-simulator-offline
+          path: dist/index.html
+          if-no-files-found: error
+          retention-days: 14

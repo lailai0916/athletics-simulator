@@ -1,0 +1,470 @@
+:root {
+  color-scheme: light;
+  --lane-width: 0.05;
+  --kerb-width: 0.12;
+  --mark-width: 0.05;
+  --start-width: 0.05;
+  --paper: #f4f3ed;
+  --ink: #293c31;
+  --muted: #84917f;
+  --red: #b65442;
+  --break: #b9dfaa;
+  --line: #d9ddd1;
+  --glass: #f7f6f0;
+  --control-edge: #ffffffc7;
+  --control-shadow: inset 0 0 0 1px var(--control-edge), 0 4px 18px #263b2a10, 0 1px 3px #263b2a08;
+  --control-inset-x: 20px;
+  --control-inset-top: 18px;
+  --control-inset-bottom: 20px;
+}
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+button,
+input,
+select {
+  font: inherit;
+}
+button,
+select {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+button {
+  border: 0;
+  background: none;
+  color: inherit;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  border-radius: 50%;
+  user-select: none;
+  transition:
+    background-color 0.12s ease-out,
+    transform 0.12s ease-out,
+    color 0.12s ease-out;
+}
+button:active:enabled {
+  transform: scale(0.96);
+  background: #dfe6d7;
+}
+button:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+button:focus-visible,
+select:focus-visible,
+input:focus-visible {
+  outline: 2px solid #6e8b68;
+  outline-offset: 3px;
+}
+button svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.65;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+.icon-button {
+  width: 44px;
+  height: 44px;
+}
+.app {
+  height: 100%;
+  height: 100dvh;
+  position: relative;
+  isolation: isolate;
+}
+.court {
+  position: absolute;
+  inset: 0;
+}
+#stadium {
+  width: 100%;
+  height: 100%;
+  display: block;
+  user-select: none;
+  touch-action: none;
+  cursor: grab;
+  shape-rendering: geometricPrecision;
+  text-rendering: geometricPrecision;
+}
+#stadium.dragging {
+  cursor: grabbing;
+}
+/* Scenery never owns input: only athletes and the root camera are interactive. */
+#base-layer,
+#fixed-markings-layer,
+#track-lines-layer,
+#priority-markings-layer,
+#event-layer,
+#route-layer,
+#start-layer {
+  pointer-events: none;
+}
+#stadium.dragging #runner-layer {
+  pointer-events: none;
+}
+[data-lane-boundary],
+[data-straight-boundary],
+[data-lane-return] {
+  stroke-width: 0.05;
+  stroke-linecap: butt;
+  stroke-linejoin: miter;
+}
+[data-lane-boundary='0'] {
+  stroke-width: 0.12;
+}
+#fixed-markings-layer path,
+#fixed-markings-layer line,
+#priority-markings-layer path,
+#priority-markings-layer line {
+  stroke-width: 0.05;
+  stroke-linejoin: miter;
+  stroke-linecap: butt;
+}
+.surface-grain {
+  display: none;
+  pointer-events: none;
+}
+.rubber-detail .surface-grain {
+  display: block;
+  opacity: var(--rubber-detail-opacity, 1);
+}
+.football-grass-detail,
+.football-net-mesh {
+  display: none;
+}
+.fine-detail .football-grass-detail {
+  display: block;
+  opacity: var(--surface-detail-opacity, 1);
+}
+.fine-detail .football-net-mesh {
+  display: block;
+  opacity: calc(var(--surface-detail-opacity, 1) * 0.72);
+}
+.equipment-detail {
+  display: none;
+  pointer-events: none;
+}
+.fine-detail .equipment-detail {
+  display: block;
+  opacity: var(--surface-detail-opacity, 1);
+}
+.athlete {
+  cursor: pointer;
+  outline: none;
+}
+.athlete .token-body {
+  stroke-width: var(--token-width, 0.025);
+}
+.athlete.pack-runner .token-body {
+  stroke-width: var(--pack-token-width, 0.025);
+}
+.athlete.waiting .token-body {
+  stroke-width: var(--wait-width, 0.055);
+}
+.athlete.relay-runner .token-body {
+  stroke-width: var(--token-width, 0.025);
+}
+.selection-ring {
+  stroke-width: var(--selection-width, 0.025);
+  opacity: 0;
+  pointer-events: none;
+}
+.athlete[aria-pressed='true'] .selection-ring,
+.athlete:focus-visible .selection-ring {
+  opacity: 1;
+}
+.relay-runner[data-selected='true'] .selection-ring {
+  opacity: 1;
+}
+.athlete:focus-visible .selection-ring {
+  stroke: #293c31;
+}
+.point-label {
+  font-family: 'SFMono-Regular', Menlo, monospace;
+  font-size: 0.3px;
+  font-weight: 600;
+  text-anchor: middle;
+  dominant-baseline: central;
+  pointer-events: none;
+  display: none;
+}
+.lane-label {
+  font-family: 'SFMono-Regular', Menlo, monospace;
+  font-size: 0.58px;
+  font-weight: 500;
+  fill: #f4e6d8;
+  text-anchor: middle;
+  dominant-baseline: central;
+  pointer-events: none;
+  opacity: 0.85;
+}
+.detail-labels .point-label {
+  display: block;
+  opacity: var(--label-opacity, 1);
+}
+.pack-runner .point-label {
+  font-size: 0.26px;
+}
+.top-controls {
+  position: absolute;
+  left: max(var(--control-inset-x), calc(env(safe-area-inset-left) + 8px));
+  right: max(var(--control-inset-x), calc(env(safe-area-inset-right) + 8px));
+  top: max(var(--control-inset-top), calc(env(safe-area-inset-top) + 8px));
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none;
+}
+.top-controls > * {
+  pointer-events: auto;
+}
+/* Opaque control surfaces stay crisp without sampling the moving SVG in Safari. */
+.event-picker-trigger,
+#group-start,
+.transport {
+  background: var(--glass);
+  box-shadow: var(--control-shadow);
+}
+/*__EVENT_PICKER_CSS__*/
+#group-start {
+  color: #6b7f62;
+}
+#group-start[aria-pressed='true'] {
+  background: #dce6d4;
+  color: #3c583b;
+  box-shadow:
+    inset 0 0 0 1px #c8d7be,
+    0 3px 12px #263b2a0a;
+}
+.bottom-controls {
+  position: absolute;
+  left: max(var(--control-inset-x), calc(env(safe-area-inset-left) + 8px));
+  right: max(var(--control-inset-x), calc(env(safe-area-inset-right) + 8px));
+  bottom: max(var(--control-inset-bottom), calc(env(safe-area-inset-bottom) + 8px));
+  width: auto;
+  max-width: 480px;
+  margin-inline: auto;
+  z-index: 2;
+  pointer-events: none;
+}
+.transport {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  padding: 4px;
+  border-radius: 28px;
+  pointer-events: auto;
+}
+.play {
+  width: 48px;
+  height: 48px;
+  background: var(--ink);
+  color: #faf9f2;
+  box-shadow: inset 0 0 0 1px #1c352a12;
+}
+.play:active:enabled {
+  background: #20372a;
+}
+.play svg {
+  width: 20px;
+  height: 20px;
+}
+.speed {
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  border-radius: 22px;
+  font-family: 'SFMono-Regular', Menlo, monospace;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  margin-right: 2px;
+  white-space: nowrap;
+}
+#timeline {
+  appearance: none;
+  -webkit-appearance: none;
+  height: 44px;
+  min-width: 30px;
+  flex: 1;
+  cursor: pointer;
+  background: transparent;
+  margin: 0 8px;
+  padding: 0;
+  --progress: 0%;
+  border-radius: 4px;
+  -webkit-tap-highlight-color: transparent;
+}
+#timeline::-webkit-slider-runnable-track {
+  height: 2px;
+  background: linear-gradient(to right, #58744f var(--progress), #d4dbce var(--progress));
+  border-radius: 4px;
+}
+#timeline::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 10px;
+  height: 10px;
+  margin-top: -4px;
+  border: 0;
+  border-radius: 50%;
+  background: #58744f;
+  box-shadow: 0 0 0 3px var(--glass);
+  transition: box-shadow 0.12s ease-out;
+}
+#timeline::-moz-range-track {
+  height: 2px;
+  background: #d4dbce;
+  border-radius: 4px;
+}
+#timeline::-moz-range-progress {
+  height: 2px;
+  background: #58744f;
+  border-radius: 4px;
+}
+#timeline::-moz-range-thumb {
+  height: 10px;
+  width: 10px;
+  border: 0;
+  border-radius: 50%;
+  background: #58744f;
+  box-shadow: 0 0 0 3px var(--glass);
+  transition: box-shadow 0.12s ease-out;
+}
+#timeline:focus-visible {
+  outline: none;
+}
+#timeline:focus-visible::-webkit-slider-thumb {
+  box-shadow:
+    0 0 0 3px var(--glass),
+    0 0 0 5px #58744f;
+}
+#timeline:focus-visible::-moz-range-thumb {
+  box-shadow:
+    0 0 0 3px var(--glass),
+    0 0 0 5px #58744f;
+}
+#timeline:active::-webkit-slider-thumb {
+  box-shadow:
+    0 0 0 3px var(--glass),
+    0 0 0 7px #58744f24;
+}
+#timeline:active::-moz-range-thumb {
+  box-shadow:
+    0 0 0 3px var(--glass),
+    0 0 0 7px #58744f24;
+}
+@media (hover: hover) {
+  button:hover:enabled:not(:active) {
+    background: #e3e8dc;
+  }
+  .play:hover:enabled:not(:active) {
+    background: #3c5742;
+  }
+  #timeline:hover:not(:focus-visible):not(:active)::-webkit-slider-thumb {
+    box-shadow:
+      0 0 0 3px var(--glass),
+      0 0 0 6px #58744f18;
+  }
+  #timeline:hover:not(:focus-visible):not(:active)::-moz-range-thumb {
+    box-shadow:
+      0 0 0 3px var(--glass),
+      0 0 0 6px #58744f18;
+  }
+}
+[hidden] {
+  display: none !important;
+}
+@media (max-width: 600px) {
+  :root {
+    --control-inset-x: 14px;
+    --control-inset-top: 12px;
+    --control-inset-bottom: 18px;
+  }
+  .event-picker {
+    min-width: min(184px, calc(100% - 52px));
+  }
+}
+@media (max-width: 360px) {
+  .event-picker {
+    min-width: min(174px, calc(100% - 50px));
+  }
+  .top-controls {
+    gap: 6px;
+  }
+  .event-picker-trigger {
+    font-size: 13px;
+    padding-left: 12px;
+  }
+  .transport {
+    gap: 2px;
+  }
+  #timeline {
+    margin: 0 5px;
+  }
+}
+@media (max-height: 500px) {
+  :root {
+    --control-inset-top: 8px;
+    --control-inset-bottom: 8px;
+  }
+  .transport {
+    padding: 3px;
+  }
+  .play {
+    width: 44px;
+    height: 44px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  button {
+    transition: none;
+  }
+  #timeline::-webkit-slider-thumb {
+    transition: none;
+  }
+  #timeline::-moz-range-thumb {
+    transition: none;
+  }
+}
+
+/* Language stays a single compact control, independent of camera and race. */
+.language {
+  margin-left: auto;
+  background: var(--glass);
+  box-shadow: var(--control-shadow);
+  font-size: 12px;
+  font-weight: 500;
+}
+@media (max-width: 360px) {
+  .top-controls .event-picker {
+    min-width: 0;
+    width: 174px;
+    flex: 0 1 174px;
+  }
+}

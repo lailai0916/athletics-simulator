@@ -1,7 +1,23 @@
 {
-  "name": "lailai-template",
+  "name": "athletics-simulator",
+  "version": "0.1.0",
   "private": true,
+  "description": "An interactive track athletics simulator for rules demonstrations and extensible race-path analysis.",
+  "license": "MIT",
+  "author": "lailai",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lailai0916/athletics-simulator.git"
+  },
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
+    "dev": "node scripts/serve.cjs",
+    "build": "node scripts/build.cjs",
+    "preview": "node scripts/serve.cjs --preview",
+    "test": "node tests/run.cjs",
+    "check": "npm run format:check && npm test && npm run build",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },

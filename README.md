@@ -25,7 +25,7 @@ A full-screen, eight-lane 400 m track supports 21 events, including five relays.
 
 🏃 **Event And Relay Routes** — Compare lane races, curved starts, two-group starts, lane breaks, and relay exchanges across sprint, middle-distance, long-distance, hurdle, and steeplechase events.
 
-🎛️ **Direct Visual Controls** — Pan and zoom the field, select an athlete or team to follow, seek through the race, and switch between 0.5×, 1×, 2×, and 4× playback. Event changes preserve the camera view.
+🎛️ **Direct Visual Controls** — Pan and zoom the field, select an athlete or team to follow, seek through the race, and switch between 0.25×, 0.5×, 1×, 2×, 4×, and 8× playback. Event changes preserve the camera view.
 
 🌐 **Two Interface Languages** — Switch between English and Simplified Chinese while keeping the field as the main interface.
 

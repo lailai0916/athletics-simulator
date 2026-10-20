@@ -4,6 +4,16 @@ This project follows Semantic Versioning. Entries describe user-visible behavior
 
 本项目采用语义化版本。记录面向用户的行为、模型及开发接口变更；0.x 阶段不承诺稳定的扩展 API。
 
+## Unreleased
+
+### Added
+
+- 0.25× and 8× playback speeds, extending the speed button to six multipliers.
+
+### 新增
+
+- 新增 0.25× 与 8× 播放倍数，倍速按钮支持六档循环切换。
+
 ## 0.1.0 - 2026-10-21
 
 ### Added

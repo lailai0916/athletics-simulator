@@ -74,7 +74,9 @@ All presets use a **10 m/s cruise speed** so distance and lane-path comparisons 
 
 The common race clock integrates smooth launch and post-finish velocity ramps. Baseline launch and stop durations are 2.4 seconds. Each route maps the clock to measured planar arc length, including bends and merges. Launch durations can be extended to establish clearance before athletes reach the common cruise speed. The shared stop begins after the last athlete crosses the finish.
 
-Quintic transitions smooth merges, receiver acceleration, transfers, and retirement. Formation gaps, at least 0.7 m of finish-clock separation in shared-track fields, lane-centre placement, receiver approach offsets, and retiring-runner fans are display parameters. They are not official spacing requirements, calibrated biomechanics, or emergent tactics. The route after a break line illustrates one choice; the rules do not mandate that exact path.
+Quintic transitions smooth merges, receiver acceleration, transfers, and retirement. Ordinary individual curved-start presets converge earlier within the opening bend, avoiding the extra outer-curve travel caused by carrying the initial lateral spread through an entire bend. The protected outer group retains its separate first-bend route. Both the route geometry and its arc-length mapping use the same convergence window.
+
+Formation gaps, at least 0.54 m of finish-clock separation for shared-track individual packs and 0.7 m for the other shared-track presets, lane-centre placement, receiver approach offsets, and retiring-runner fans are display parameters. They are not official spacing requirements, calibrated biomechanics, or emergent tactics. The compact opening is a deterministic preset, not a claim that every real field must form a single file or retain a particular gap. The route after a break line illustrates one choice; the rules do not mandate that exact path.
 
 ## Research and tactical scope
 

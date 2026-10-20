@@ -22,7 +22,7 @@ class Node {
 }
 vm.createContext(ctx);
 let app = require('./helpers/load-app.cjs').withBootstrap(
-  '\nwindow.Presentation={state,createRoutes,displayedPoint,centerLane,blocks,paintSprintHurdle,zone,raceEndDistance,courseParameter};\n'
+  '\nwindow.Presentation={state,createRoutes,displayedPoint,centerLane,blocks,paintSprintHurdle,zone,raceEndDistance,courseParameter,packFormationSpan};\n'
 );
 assert(app.includes('/*__TRACE_SEGMENTS__*/'), 'route trace has its diagnostic seam');
 app = app.replace('/*__TRACE_SEGMENTS__*/', 'window.traceSegments=segments;');
@@ -37,6 +37,7 @@ const {
     zone,
     raceEndDistance,
     courseParameter,
+    packFormationSpan,
   } = ctx.window.Presentation,
   G = ctx.window.TrackMath.geometry;
 let checks = 0,
@@ -66,9 +67,12 @@ for (const id of ['800', '1500', '5000', '10000', '3000sc'])
     state.grouped = grouped;
     createRoutes();
     for (const route of state.routes) {
-      const formationSpan = 120;
+      const formationSpan = id === '800' ? 120 : packFormationSpan(route);
       const samples = [
-        ...Array.from({ length: Math.ceil(formationSpan * 15) }, (_, i) => 0.001 + i * 0.1),
+        ...Array.from(
+          { length: Math.ceil(Math.max(120, formationSpan) * 15) },
+          (_, i) => 0.001 + i * 0.1
+        ),
         ...Array.from({ length: 1200 }, (_, i) => state.event.distance - 120 + 0.001 + i * 0.1),
         ...(id === '800'
           ? Array.from({ length: 1600 }, (_, i) => route.breakD + 0.001 + i * 0.1)

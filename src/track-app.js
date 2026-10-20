@@ -762,9 +762,15 @@
     drawRoutes();
     createRunnerNodes();
   }
+  function packFormationSpan(route) {
+    // Ordinary curved starts may converge immediately. Keeping their lateral
+    // spread through an entire bend adds a large artificial route penalty.
+    // The outer group still follows its own protected first-bend corridor.
+    return route.outer || state.event.kind === 'relay1500' ? 120 : 45;
+  }
   function packDisplayedPoint(route, d, gapPerRunner = 0.95) {
     const reference = state.grouped && route.outer ? state.routes[10] : state.routes[0],
-      span = 120,
+      span = packFormationSpan(route),
       formation = mergeC2(d / span),
       alongFade = 1 - formation,
       sideFade = 1 - mergeC2((d - span / 2) / span),
@@ -802,7 +808,7 @@
   function routeDisplayPoint(route, d) {
     const e = state.event;
     let p;
-    // Long, C2-continuous formation windows prevent the outer pack from walking
+    // C2-continuous formation windows prevent the outer pack from walking
     // backwards at the start or sprinting abruptly to erase its display spacing.
     if (e.kind === 'break') {
       const reference = state.routes[0],

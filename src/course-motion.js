@@ -47,8 +47,9 @@ function smoothCourseGeometry(route, end) {
     patches = [];
   if (packed || e.kind === 'break') {
     const gap = e.kind === 'relay1500' ? 0 : route.index * 0.95,
-      b = e.kind === 'break' ? route.breakD : 0;
-    const progress = (u) => Math.max(0, u - gap * mergeC2((u - b) / 120));
+      b = e.kind === 'break' ? route.breakD : 0,
+      span = packed ? packFormationSpan(route) : 120;
+    const progress = (u) => Math.max(0, u - gap * mergeC2((u - b) / span));
     const inverse = (s) => {
       let lo = 0,
         hi = end + 20;
@@ -182,10 +183,13 @@ function prepareCourseMotion() {
   }
   // Individual smooth starts retain room in the common corridor. After launch,
   // every athlete travels exactly one metre for each shared cruise-clock metre.
-  const shared = packed || ['break', 'relay400', 'relay800'].includes(e.kind);
+  const shared = packed || ['break', 'relay400', 'relay800'].includes(e.kind),
+    // Individual pack tokens are 0.42 m across; 0.12 m of extra clearance
+    // avoids imposing the wider relay formation on the smaller shared field.
+    finishSpacing = ['waterfall', 'steeple'].includes(e.kind) ? 0.54 : 0.7;
   let previous = -Infinity;
   for (const route of state.routes) {
-    if (shared) route.launchSetback = Math.max(0, previous + 0.7 - route.courseDistance);
+    if (shared) route.launchSetback = Math.max(0, previous + finishSpacing - route.courseDistance);
     route.finishDistance = route.courseDistance + route.launchSetback;
     previous = route.finishDistance;
   }

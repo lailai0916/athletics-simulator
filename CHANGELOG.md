@@ -16,6 +16,7 @@ This project follows Semantic Versioning. Entries describe user-visible behavior
 
 ### Fixed
 
+- Individual curved-start fields converge earlier without unnecessary outer-bend detours. The 12-runner 10,000 m preset's opening spread falls from about 18.77 m to 6.34 m while retaining measured travel, equal cruise speed, body clearance and the protected outer-group bend.
 - Selecting an athlete or team preserves the current zoom, including pending wheel input. Dragging leaves follow mode, clears the selection and pans from the latest position; wheel zoom and Space playback controls retain following.
 - Relay following centres the visible current runner instead of the hidden baton position, including at extreme zoom and after handovers.
 - Extreme-zoom window resizing preserves the camera centre and aspect ratio; subsequent wheel input respects the same zoom limits without jumping in the opposite direction.
@@ -25,6 +26,7 @@ This project follows Semantic Versioning. Entries describe user-visible behavior
 
 ### 修复
 
+- 个人弧线起跑队列更早收拢，避免外侧选手不必要地绕行整个弯道。12 人 10000 米预设的起跑纵向跨度由约 18.77 米降至 6.34 米，并保留实际路程测量、相同巡航速度、身体间距和外组首弯限制。
 - 选中运动员或队伍时保留当前缩放，包括尚未绘制的滚轮输入。拖拽会退出跟随、清除选中并从最新位置平移；滚轮缩放与空格播放控制继续保持跟随。
 - 接力跟随以当前运动员的可见圆点中心为准，修复极高倍率缩放及交接后的隐藏接力棒坐标偏移。
 - 极限放大后调整窗口尺寸时，保持镜头中心与画幅比例；后续滚轮使用统一缩放边界，避免反向跳变。

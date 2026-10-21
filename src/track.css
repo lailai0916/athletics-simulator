@@ -176,16 +176,7 @@ button svg {
   outline: none;
 }
 .athlete .token-body {
-  stroke-width: var(--token-width, 0.025);
-}
-.athlete.pack-runner .token-body {
-  stroke-width: var(--pack-token-width, 0.025);
-}
-.athlete.waiting .token-body {
-  stroke-width: var(--wait-width, 0.055);
-}
-.athlete.relay-runner .token-body {
-  stroke-width: var(--token-width, 0.025);
+  stroke-width: 0.025;
 }
 .selection-ring {
   stroke-width: var(--selection-width, 0.025);

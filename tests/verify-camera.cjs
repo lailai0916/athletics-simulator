@@ -577,7 +577,9 @@ for (const origin of ['manual', 'follow'])
   h.api.state.distance = 51;
   h.api.update();
   near(h.box(), followed, 'Escape keeps the former athlete from moving the camera');
-  h.api.state.distance = 402;
+  const firstRoute = h.api.state.routes[0];
+  h.api.state.distance =
+    firstRoute.measuredMotion.distanceAtParameter(400) + firstRoute.launchSetback + 0.01;
   h.api.update();
   const retired = h.api.state.runners[0].athletes[0];
   assert.equal(retired.getAttribute('role'), 'img', 'old baton holder is no longer interactive');

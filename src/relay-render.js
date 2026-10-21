@@ -1,4 +1,8 @@
 const runnerDOMCache = new WeakMap();
+const ATHLETE_BODY_STROKE = 0.025;
+function athleteBodyRadius(event = state.event) {
+  return ['waterfall', 'steeple'].includes(event.kind) ? 0.21 : 0.27;
+}
 function runnerDOM(node) {
   let cache = runnerDOMCache.get(node);
   if (!cache) {
@@ -34,6 +38,7 @@ function runnerText(node, text) {
 }
 function makeToken(parent, index, leg, waiting = false) {
   const packed = ['waterfall', 'steeple'].includes(state.event.kind),
+    radius = athleteBodyRadius(),
     g = elGroup(parent, {
       class:
         'athlete' +
@@ -46,19 +51,6 @@ function makeToken(parent, index, leg, waiting = false) {
       role: waiting ? 'img' : 'button',
       ...(waiting ? {} : { 'aria-pressed': 'false' }),
     });
-  element(
-    'circle',
-    {
-      class: 'selection-ring',
-      cx: 0,
-      cy: 0,
-      r: packed ? 0.28 : 0.32,
-      fill: 'none',
-      stroke: '#fff7e7',
-    },
-    undefined,
-    g
-  );
   const cache = runnerDOM(g);
   element(
     'circle',
@@ -66,8 +58,22 @@ function makeToken(parent, index, leg, waiting = false) {
       class: 'token-body',
       cx: 0,
       cy: 0,
-      r: packed ? 0.21 : 0.27,
+      r: radius,
       fill: TEAMS[index % 8],
+      stroke: '#fff7e7',
+      'stroke-width': ATHLETE_BODY_STROKE,
+    },
+    undefined,
+    g
+  );
+  element(
+    'circle',
+    {
+      class: 'selection-ring',
+      cx: 0,
+      cy: 0,
+      r: radius - 0.045,
+      fill: 'none',
       stroke: '#fff7e7',
     },
     undefined,

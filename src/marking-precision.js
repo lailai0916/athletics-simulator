@@ -88,37 +88,55 @@ function groundMarkingPath(points) {
 }
 function smoothMarkingPath(points) {
   if (points.length < 2) return groundMarkingPath(points);
+  const segments = smoothMarkingSegments(points);
+  return (
+    'M' +
+    segments[0].slice(0, 2).join(' ') +
+    segments.map((segment) => 'C' + segment.slice(2).join(' ')).join('')
+  );
+}
+// Share the rounded control points between paint and contact geometry. Contact
+// with an analytical approximation can still overlap the final SVG by microns.
+function smoothMarkingSegments(points) {
   const tangents = markingCurveTangents(points);
-  let d = 'M' + paintCoordinate(points[0].x) + ' ' + paintCoordinate(points[0].y);
+  const segments = [];
   for (let i = 1; i < points.length; i++) {
     const a = points[i - 1],
       b = points[i],
       span = Math.hypot(b.x - a.x, b.y - a.y) / 3,
       u = tangents[i - 1],
       v = tangents[i];
-    d +=
-      'C' +
-      [a.x + u.x * span, a.y + u.y * span, b.x - v.x * span, b.y - v.y * span, b.x, b.y]
-        .map(paintCoordinate)
-        .join(' ');
+    segments.push(
+      [
+        a.x,
+        a.y,
+        a.x + u.x * span,
+        a.y + u.y * span,
+        b.x - v.x * span,
+        b.y - v.y * span,
+        b.x,
+        b.y,
+      ].map(paintCoordinate)
+    );
   }
-  return d;
+  return segments;
 }
 // The measured rear edge is offset 25mm along its local forward normal. The
 // centreline is emitted as tangent-continuous cubic segments, never a polygon.
 function measurementEdgePath(points, width = TRACK_PAINT_WIDTH) {
+  return smoothMarkingPath(measurementEdgePoints(points, width));
+}
+function measurementEdgePoints(points, width = TRACK_PAINT_WIDTH) {
   const tangents = markingCurveTangents(points);
-  return smoothMarkingPath(
-    points.map((p, i) => {
-      const v = tangents[i],
-        length = Math.hypot(v.x, v.y) || 1;
-      return {
-        x: p.x + ((v.y / length) * width) / 2,
-        y: p.y - ((v.x / length) * width) / 2,
-        ...(p.markingTangent ? { markingTangent: p.markingTangent } : {}),
-      };
-    })
-  );
+  return points.map((p, i) => {
+    const v = tangents[i],
+      length = Math.hypot(v.x, v.y) || 1;
+    return {
+      x: p.x + ((v.y / length) * width) / 2,
+      y: p.y - ((v.x / length) * width) / 2,
+      ...(p.markingTangent ? { markingTangent: p.markingTangent } : {}),
+    };
+  });
 }
 
 // Wire-unwinding construction prescribed by the manual for the 800m breakline.
@@ -785,7 +803,7 @@ function drawFixedMarkings() {
 }
 
 // Replacement updateDetail: all ground paint remains fixed at its physical size.
-// Tokens/routes are pedagogical overlays and may retain their own pixel minimum.
+// Body outlines retain their metre-based size so zoom cannot change start contact.
 function updateDetail() {
   const viewport = camera.viewport(),
     scale = Math.min(viewport.width / state.box[2], viewport.height / state.box[3]);
@@ -807,10 +825,7 @@ function updateDetail() {
   const widths = {
       'route-width': Math.max(0.035, 0.55 / scale),
       'route-selected-width': Math.max(0.065, 0.9 / scale),
-      'token-width': Math.max(0.025, 0.42 / scale),
-      'pack-token-width': Math.max(0.025, 0.18 / scale),
-      'wait-width': Math.max(0.055, 0.5 / scale),
-      'selection-width': Math.max(0.025, 0.6 / scale),
+      'selection-width': Math.min(0.035, Math.max(0.025, 0.6 / scale)),
       'surface-detail-opacity': clamp((scale - 28) / 28, 0, 1),
       'label-opacity': clamp((scale - 20) / 12, 0, 1),
       'marker-detail-opacity': clamp((scale - 10) / 8, 0, 1),

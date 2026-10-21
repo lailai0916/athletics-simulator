@@ -1,5 +1,85 @@
 /* Geometry stays in track metres. The shared clock is converted to each
  * athlete's travelled arc length; lane changes never multiply cruise speed. */
+const START_BODY_LEAD_IN = 12;
+const startingPaintCurves = new WeakMap();
+function startPaintContact(route, approximate) {
+  let curves = startingPaintCurves.get(state.event);
+  if (!curves) startingPaintCurves.set(state.event, (curves = new Map()));
+  const outer = Boolean(route.outer);
+  let segments = curves.get(outer);
+  if (!segments) {
+    segments = smoothMarkingSegments(measurementEdgePoints(startCurvePoints(state.event, outer)));
+    curves.set(outer, segments);
+  }
+  let best = Infinity,
+    contact;
+  for (const s of segments) {
+    const xs = [s[0], s[2], s[4], s[6]],
+      ys = [s[1], s[3], s[5], s[7]],
+      dx = Math.max(Math.min(...xs) - approximate.x, 0, approximate.x - Math.max(...xs)),
+      dy = Math.max(Math.min(...ys) - approximate.y, 0, approximate.y - Math.max(...ys));
+    if (dx * dx + dy * dy > best) continue;
+    const point = (t) => {
+      const v = 1 - t;
+      return {
+        x: v ** 3 * s[0] + 3 * v * v * t * s[2] + 3 * v * t * t * s[4] + t ** 3 * s[6],
+        y: v ** 3 * s[1] + 3 * v * v * t * s[3] + 3 * v * t * t * s[5] + t ** 3 * s[7],
+      };
+    };
+    const squared = (t) => {
+      const p = point(t);
+      return (p.x - approximate.x) ** 2 + (p.y - approximate.y) ** 2;
+    };
+    let lo = 0,
+      hi = 1;
+    for (let i = 0; i < 52; i++) {
+      const a = (2 * lo + hi) / 3,
+        b = (lo + 2 * hi) / 3;
+      if (squared(a) < squared(b)) hi = b;
+      else lo = a;
+    }
+    for (const t of [0, (lo + hi) / 2, 1]) {
+      const distance = squared(t);
+      if (distance >= best) continue;
+      const v = 1 - t,
+        tx = v * v * (s[2] - s[0]) + 2 * v * t * (s[4] - s[2]) + t * t * (s[6] - s[4]),
+        ty = v * v * (s[3] - s[1]) + 2 * v * t * (s[5] - s[3]) + t * t * (s[7] - s[5]),
+        length = Math.hypot(tx, ty);
+      best = distance;
+      contact = { ...point(t), tx: ty / length, ty: -tx / length };
+    }
+  }
+  return contact;
+}
+function startingBodyCenter(route) {
+  if (route.bodyStart) return route.bodyStart;
+  const e = state.event,
+    raw = routeDisplayPoint(route, 0),
+    radius = athleteBodyRadius(e) + ATHLETE_BODY_STROKE / 2;
+  let contact;
+  if (['waterfall', 'steeple', 'relay1500'].includes(e.kind)) {
+    const flow = route.position(0),
+      n = Number.isFinite(flow.tx) ? flow : raw;
+    contact = startPaintContact(route, {
+      x: raw.x + (n.tx * TRACK_PAINT_WIDTH) / 2,
+      y: raw.y + (n.ty * TRACK_PAINT_WIDTH) / 2,
+    });
+    // The painted centreline is half a stripe ahead of its measured rear edge.
+    route.bodyStart = {
+      x: contact.x - contact.tx * (radius + TRACK_PAINT_WIDTH / 2),
+      y: contact.y - contact.ty * (radius + TRACK_PAINT_WIDTH / 2),
+    };
+  } else {
+    contact = { ...raw };
+    // The two-lap survey is rounded, but lane 1 shares the physical finish stripe.
+    if (e.id === '4x200' && route.lane === 1) contact.x = G.right;
+    route.bodyStart = {
+      x: contact.x - contact.tx * radius,
+      y: contact.y - contact.ty * radius,
+    };
+  }
+  return route.bodyStart;
+}
 function courseTravelDistance(route, clock) {
   const d = Math.max(0, clock),
     lag = route.launchSetback || 0;
@@ -107,13 +187,25 @@ function smoothCourseGeometry(route, end) {
       patches.push({ start: a, end: z, span: H, x: coefficient('x'), y: coefficient('y') });
     }
   }
-  const point = (u) => {
+  const patched = (u) => {
     for (const patch of patches)
       if (u >= patch.start && u <= patch.end) {
         const t = (u - patch.start) / patch.span;
         return { x: mergePolynomial(patch.x, t), y: mergePolynomial(patch.y, t) };
       }
     return raw(u);
+  };
+  const initial = raw(0),
+    bodyStart = startingBodyCenter(route),
+    offset = { x: bodyStart.x - initial.x, y: bodyStart.y - initial.y };
+  // Move the complete body behind the paint, then join the existing course
+  // with zero velocity/acceleration discontinuity. This lead-in is measured
+  // below, so it cannot change any athlete's physical acceleration or speed.
+  const point = (u) => {
+    const p = patched(u);
+    if (u >= START_BODY_LEAD_IN) return p;
+    const fade = 1 - mergeC2(u / START_BODY_LEAD_IN);
+    return { ...p, x: p.x + offset.x * fade, y: p.y + offset.y * fade };
   };
   route.coursePatches = patches;
   route.coursePoint = (u) => {
@@ -137,14 +229,14 @@ function measureCourseMotion(route) {
     prefixEnd = entire
       ? e.distance + 96
       : e.kind === 'straight'
-        ? 0
+        ? START_BODY_LEAD_IN
         : e.kind === 'steeple'
           ? SC_PRE + (state.routes.length - 1) * 0.95 + 2
           : packed
             ? 240
             : Math.max(0, route.breakD) + 210;
   const point = smoothCourseGeometry(route, prefixEnd);
-  const splits = route.coursePatches.flatMap((p) => [p.start, p.end]);
+  const splits = [START_BODY_LEAD_IN, ...route.coursePatches.flatMap((p) => [p.start, p.end])];
   if (Number.isFinite(route.breakD))
     splits.push(
       route.breakD,

@@ -109,8 +109,11 @@ for (const id of ['800', '1500', '5000', '10000', '3000sc'])
         }
       }
       const initial = displayedPoint(route, 0),
-        expected = id === '800' ? centerLane(route.start, route.lane) : route.start;
-      assert(distance(initial, expected) < 1e-9, `${id}: retain exact original starting array`);
+        expected = route.bodyStart;
+      assert(
+        distance(initial, expected) < 1e-9,
+        `${id}: retain the body-to-paint contact position`
+      );
       checks++;
       if (id === '800')
         for (let d = 0; courseParameter(route, d) < route.breakD; d += 0.125) {

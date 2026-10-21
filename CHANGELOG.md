@@ -16,6 +16,7 @@ This project follows Semantic Versioning. Entries describe user-visible behavior
 
 ### Fixed
 
+- Athlete bodies, including their outlines, start tangent to the rear edge of the actual starting paint across straight, staggered, curved, grouped and relay starts. Zoom and selection no longer introduce visual overlap; the smooth lead-in retains measured movement.
 - Single-group individual curved starts use identical acceleration for every athlete. Measured merge paths establish body clearance, fixing the steeplechase's artificial first-metres pass caused by slowing higher-numbered athletes from the gun.
 - Individual curved-start fields converge earlier without unnecessary outer-bend detours. The 12-runner 10,000 m preset's opening spread falls from about 18.77 m to 6.34 m while retaining measured travel, equal cruise speed, body clearance and the protected outer-group bend.
 - Selecting an athlete or team preserves the current zoom, including pending wheel input. Dragging leaves follow mode, clears the selection and pans from the latest position; wheel zoom and Space playback controls retain following.
@@ -27,6 +28,7 @@ This project follows Semantic Versioning. Entries describe user-visible behavior
 
 ### 修复
 
+- 直线、错位、弧线、分组与接力起跑的圆点完整外缘（含描边）与实际起跑标线后沿相切；缩放和选中不会造成视觉压线，起步连接继续计入实测运动距离。
 - 单组个人弧线起跑中全员使用相同加速度，通过实测并道路线保留身体间距，修复障碍赛因大编号选手从枪响就被减慢而在最初几米发生的人为反超。
 - 个人弧线起跑队列更早收拢，避免外侧选手不必要地绕行整个弯道。12 人 10000 米预设的起跑纵向跨度由约 18.77 米降至 6.34 米，并保留实际路程测量、相同巡航速度、身体间距和外组首弯限制。
 - 选中运动员或队伍时保留当前缩放，包括尚未绘制的滚轮输入。拖拽会退出跟随、清除选中并从最新位置平移；滚轮缩放与空格播放控制继续保持跟随。

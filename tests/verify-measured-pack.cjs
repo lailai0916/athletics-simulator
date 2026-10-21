@@ -96,7 +96,7 @@ for (const id of Object.keys(expectedCrossings))
         route.outer && route.measuredMotion
           ? route.measuredMotion.distanceAtParameter(route.breakD) + setback
           : -Infinity;
-      const expectedStart = Q.rawPoint ? Q.rawPoint(route, 0) : route.start;
+      const expectedStart = route.bodyStart;
       check(
         distance(previous, expectedStart) < 1e-8,
         `${id}/${grouped} runner ${route.index + 1}: preserves the exact starting position`
@@ -241,10 +241,12 @@ for (const id of Object.keys(expectedCrossings))
           `${id}/${grouped} runner ${route.index + 1}: passes forwards through finish instead of merely touching it`
         );
         let crossings = 0,
-          last = Q.displayedPoint(route, 0.00001);
+          last = Q.displayedPoint(route, 2);
         // The finish is tangent to the first bend. A sample after crossing has
         // already left the exact finish y coordinate; use the lower half-plane.
-        for (let s = 2; s <= fd + 2; s += 2) {
+        // A start that shares the finish now places the whole body behind its
+        // stripe. Its initial passage over that start is not a completed lap.
+        for (let s = 4; s <= fd + 2; s += 2) {
           const d = Math.min(s, fd + 0.001),
             point = Q.displayedPoint(route, d);
           if (last.x < G.right && point.x >= G.right && point.y > G.cy) crossings++;

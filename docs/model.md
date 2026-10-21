@@ -36,6 +36,8 @@ Lane-based presets have eight athletes or teams. Regular shared-track individual
 
 Individual tokens use numbers. Relay tokens use a team letter and leg number, such as A1. These are interface identifiers. The eight-colour palette repeats when the field has more than eight athletes.
 
+At the start, each token's complete outer edge, including its 0.025 m outline, touches the rear edge of its starting stripe without covering the paint. Curved starts use the normal of the rendered paint curve. Body outlines retain their size in track metres at every zoom, and selection rings stay inside the body. A measured, smooth lead-in joins this body placement to the existing course without changing physical acceleration or cruise speed. Token dimensions and this connection are visualization choices, not athlete biomechanics or extra official race distance.
+
 ## Track and markings
 
 The standard-track construction uses a 36.50 m inner radius, 84.39 m straights, and eight 1.22 m lanes. Measurement lines are 0.30 m from a kerb in lane 1 and 0.20 m from the inner line in the other lanes. Ground paint is 0.05 m wide in world coordinates; the outer lane line is included in the lane width. The selected kerb width is 0.12 m. Start lines, exchange marks, hurdle stations, the finish line, and the mile start remain painted when the selected event changes.

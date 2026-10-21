@@ -766,7 +766,7 @@
     // Ordinary curved starts may converge immediately. Keeping their lateral
     // spread through an entire bend adds a large artificial route penalty.
     // The outer group still follows its own protected first-bend corridor.
-    return route.outer || state.event.kind === 'relay1500' ? 120 : 45;
+    return route.formationSpan ?? (route.outer || state.event.kind === 'relay1500' ? 120 : 45);
   }
   function packDisplayedPoint(route, d, gapPerRunner = 0.95) {
     const reference = state.grouped && route.outer ? state.routes[10] : state.routes[0],

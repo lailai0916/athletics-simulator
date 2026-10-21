@@ -130,56 +130,108 @@ function smoothCourseGeometry(route, end) {
   };
   return point;
 }
-function prepareCourseMotion() {
+function measureCourseMotion(route) {
   const e = state.event,
     packed = ['waterfall', 'steeple', 'relay1500'].includes(e.kind);
+  const entire = ['lanes', 'relay100', 'relay200'].includes(e.kind),
+    prefixEnd = entire
+      ? e.distance + 96
+      : e.kind === 'straight'
+        ? 0
+        : e.kind === 'steeple'
+          ? SC_PRE + (state.routes.length - 1) * 0.95 + 2
+          : packed
+            ? 240
+            : Math.max(0, route.breakD) + 210;
+  const point = smoothCourseGeometry(route, prefixEnd);
+  const splits = route.coursePatches.flatMap((p) => [p.start, p.end]);
+  if (Number.isFinite(route.breakD))
+    splits.push(
+      route.breakD,
+      route.breakD + 18,
+      route.breakD + 35,
+      route.breakD + 40,
+      route.breakD + 120,
+      route.breakD + 160
+    );
+  route.measuredMotion = createMeasuredMotion(point, {
+    prefixEnd,
+    periodicTail: e.kind === 'steeple' ? SC_LAP : 0,
+    splits,
+  });
+  // Locate the final forward crossing in the geometry, including the standard
+  // survey's rounded 400 m circumference. Do not stop at a nominal parameter.
+  const nominal =
+    e.distance + (['break', 'waterfall', 'steeple'].includes(e.kind) ? route.index * 0.95 : 0);
+  let lo = nominal - 4,
+    hi = nominal + 4;
+  const crosses = (d) => {
+    const p = point(d);
+    return p.x >= G.right && p.y > G.cy;
+  };
+  while (crosses(lo)) lo -= 4;
+  while (!crosses(hi)) hi += 4;
+  for (let i = 0; i < 55; i++) {
+    const m = (lo + hi) / 2;
+    if (crosses(m)) hi = m;
+    else lo = m;
+  }
+  route.finishParameter = (lo + hi) / 2;
+  route.courseDistance = route.measuredMotion.distanceAtParameter(route.finishParameter);
+  route.launchSetback = 0;
+  return { point, prefixEnd };
+}
+// Only a fitting estimate: the final route always uses createMeasuredMotion's
+// precise arc-length table. Richardson cancellation keeps this one-time search
+// cheap without changing the geometry or doing extra work during playback.
+function packPrefixLength(point, end) {
+  let coarse = 0,
+    fine = 0,
+    a = point(0);
+  for (let u = 0; u < end; u += 0.5) {
+    const z = Math.min(end, u + 0.5),
+      m = point((u + z) / 2),
+      b = point(z);
+    coarse += Math.hypot(b.x - a.x, b.y - a.y);
+    fine += Math.hypot(m.x - a.x, m.y - a.y) + Math.hypot(b.x - m.x, b.y - m.y);
+    a = b;
+  }
+  return (4 * fine - coarse) / 3;
+}
+function fitPackCourseClearance(route, minimum, baseline) {
+  if (route.courseDistance >= minimum) return;
+  const tail = route.courseDistance - packPrefixLength(baseline.point, baseline.prefixEnd),
+    target = minimum - tail + 0.00001;
+  let lo = packFormationSpan(route),
+    hi = 155;
+  const probe = (span) => {
+    route.formationSpan = span;
+    return packPrefixLength(smoothCourseGeometry(route, baseline.prefixEnd), baseline.prefixEnd);
+  };
+  if (probe(hi) < target)
+    throw new RangeError('Curved-start course cannot provide the required body clearance');
+  for (let i = 0; i < 18; i++) {
+    const middle = (lo + hi) / 2;
+    if (probe(middle) < target) lo = middle;
+    else hi = middle;
+  }
+  route.formationSpan = hi;
+  measureCourseMotion(route);
+  if (route.courseDistance < minimum)
+    throw new RangeError('Measured curved-start course is shorter than its fitted clearance');
+}
+function prepareCourseMotion() {
+  const e = state.event,
+    packed = ['waterfall', 'steeple', 'relay1500'].includes(e.kind),
+    equalPackLaunch = !state.grouped && ['waterfall', 'steeple'].includes(e.kind);
+  let previousCourse = -Infinity;
   for (const route of state.routes) {
-    const entire = ['lanes', 'relay100', 'relay200'].includes(e.kind),
-      prefixEnd = entire
-        ? e.distance + 96
-        : e.kind === 'straight'
-          ? 0
-          : e.kind === 'steeple'
-            ? SC_PRE + (state.routes.length - 1) * 0.95 + 2
-            : packed
-              ? 240
-              : Math.max(0, route.breakD) + 210;
-    const point = smoothCourseGeometry(route, prefixEnd);
-    const splits = route.coursePatches.flatMap((p) => [p.start, p.end]);
-    if (Number.isFinite(route.breakD))
-      splits.push(
-        route.breakD,
-        route.breakD + 18,
-        route.breakD + 35,
-        route.breakD + 40,
-        route.breakD + 120,
-        route.breakD + 160
-      );
-    route.measuredMotion = createMeasuredMotion(point, {
-      prefixEnd,
-      periodicTail: e.kind === 'steeple' ? SC_LAP : 0,
-      splits,
-    });
-    // Locate the final forward crossing in the geometry, including the standard
-    // survey's rounded 400 m circumference. Do not stop at a nominal parameter.
-    const nominal =
-      e.distance + (['break', 'waterfall', 'steeple'].includes(e.kind) ? route.index * 0.95 : 0);
-    let lo = nominal - 4,
-      hi = nominal + 4;
-    const crosses = (d) => {
-      const p = point(d);
-      return p.x >= G.right && p.y > G.cy;
-    };
-    while (crosses(lo)) lo -= 4;
-    while (!crosses(hi)) hi += 4;
-    for (let i = 0; i < 55; i++) {
-      const m = (lo + hi) / 2;
-      if (crosses(m)) hi = m;
-      else lo = m;
-    }
-    route.finishParameter = (lo + hi) / 2;
-    route.courseDistance = route.measuredMotion.distanceAtParameter(route.finishParameter);
-    route.launchSetback = 0;
+    const baseline = measureCourseMotion(route);
+    // A curved start is an equal-distance arrangement, not an ability ranking.
+    // Establish the preset's clearance with continuous, measured merge paths;
+    // do not make outer athletes accelerate more slowly from the same gun.
+    if (equalPackLaunch) fitPackCourseClearance(route, previousCourse + 0.54, baseline);
+    previousCourse = route.courseDistance;
   }
   // Individual smooth starts retain room in the common corridor. After launch,
   // every athlete travels exactly one metre for each shared cruise-clock metre.
@@ -189,7 +241,8 @@ function prepareCourseMotion() {
     finishSpacing = ['waterfall', 'steeple'].includes(e.kind) ? 0.54 : 0.7;
   let previous = -Infinity;
   for (const route of state.routes) {
-    if (shared) route.launchSetback = Math.max(0, previous + finishSpacing - route.courseDistance);
+    if (shared && !equalPackLaunch)
+      route.launchSetback = Math.max(0, previous + finishSpacing - route.courseDistance);
     route.finishDistance = route.courseDistance + route.launchSetback;
     previous = route.finishDistance;
   }

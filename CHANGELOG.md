@@ -8,10 +8,12 @@ This project follows Semantic Versioning. Entries describe user-visible behavior
 
 ### Added
 
+- Automatic GitHub Pages publication after successful main-branch validation, with an online simulator entry in both README languages.
 - 0.25× and 8× playback speeds, extending the speed button to six multipliers.
 
 ### 新增
 
+- 主分支验证成功后自动部署 GitHub Pages，并在中英文 README 提供在线模拟器入口。
 - 新增 0.25× 与 8× 播放倍数，倍速按钮支持六档循环切换。
 
 ### Fixed

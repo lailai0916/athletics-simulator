@@ -74,6 +74,12 @@ Build checks should catch unresolved source tokens and produce the same self-con
 
 Mock text metrics and Node DOM harnesses cannot prove the exact glyph layout, GPU work, event ordering, or rendering performance of a specific browser. Do not use a large assertion count as a substitute for reviewing these limits.
 
+## GitHub Pages Deployment
+
+The [live simulator](https://lailai0916.com/athletics-simulator/) is published by `.github/workflows/ci.yml`. Pushes to `main` and manual workflow runs on `main` validate the repository, run `npm run check`, and stage only the resulting `dist/index.html` as the Pages artifact. The deployment job depends on successful validation and publishes through the `github-pages` environment. Pull requests run validation without publishing.
+
+Only the deployment job receives Pages write and OIDC permissions. Workflow runs are serialized per branch; action versions are pinned to full commit SHAs. The separate offline HTML artifact remains available from the same run. No generated site branch or committed build output is required. For forks, enable GitHub Pages with GitHub Actions as its source and update the public links to the fork's Pages URL.
+
 ## Browser Acceptance
 
 Use the built page when checking a release. At minimum, review Chromium and Safari when changing SVG rendering, detail thresholds, or camera input.

@@ -33,6 +33,8 @@ Athletics Simulator 是一个在浏览器中运行的径赛模拟项目，用于
 
 ## 快速开始
 
+在浏览器中打开[在线模拟器](https://lailai0916.com/athletics-simulator/)。`main` 分支的更新通过验证后，由 GitHub Pages 自动发布。
+
 需要 Node.js 22 或更高版本及 npm。构建后的应用不依赖外部素材或运行时软件包。
 
 ```bash

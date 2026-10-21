@@ -74,6 +74,12 @@
 
 模拟文字度量与 Node DOM 工具无法证明特定浏览器的字形排版、GPU 开销、事件顺序或渲染性能。断言数量再多，也不能代替对这些边界的检查。
 
+## GitHub Pages 部署
+
+[在线模拟器](https://lailai0916.com/athletics-simulator/)由 `.github/workflows/ci.yml` 发布。推送到 `main` 或在 `main` 上手动运行工作流时，会验证仓库、执行 `npm run check`，并仅将生成的 `dist/index.html` 整理为 Pages 产物。部署任务依赖验证成功，通过 `github-pages` 环境发布。拉取请求只运行验证，不发布站点。
+
+只有部署任务获得 Pages 写入与 OIDC 权限。同一分支的工作流串行执行；Action 版本固定到完整提交 SHA。同一次运行仍提供独立的离线 HTML 产物，无需生成站点分支或提交构建文件。派生仓库时，应启用 GitHub Pages 并选择 GitHub Actions 作为来源，再将公开链接改为派生仓库的 Pages 地址。
+
 ## 浏览器验收
 
 发布检查使用构建后的页面。修改 SVG 渲染、细节阈值或视角输入时，至少检查 Chromium 和 Safari。

@@ -33,6 +33,8 @@ A full-screen, eight-lane 400 m track supports 21 events, including five relays.
 
 ## Getting Started
 
+Open the [online simulator](https://lailai0916.com/athletics-simulator/) in your browser. Updates to `main` are published through GitHub Pages after validation succeeds.
+
 Use Node.js 22 or later and npm. No external assets or runtime packages are required by the built application.
 
 ```bash

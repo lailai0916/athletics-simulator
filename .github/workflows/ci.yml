@@ -36,7 +36,7 @@ jobs:
         run: python3 .standards/scripts/check_repository.py --root . --display-name 'Athletics Simulator'
       - name: Validate tracked filenames
         run: git ls-files -z | xargs -0 python3 .standards/scripts/check_repository.py --paths
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '22'
           cache: npm
